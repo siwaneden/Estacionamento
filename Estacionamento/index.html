@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estacionamento do Shopping</title>
+    <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+    <h1>Estacionamento do Shopping</h1>
+
+    <div id="estacionamento">
+        <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const estacionamento = document.getElementById('estacionamento');
+    const tarifaPorHora = 10; // hora
+    const tarifaPorFracao = 2; //fração de hora
+    let horarioEntrada = {}; // Armazena o horário de entrada para cada vaga
+
+    // Criar quantas vagas quiser, só mudar o for
+    for (let i = 0; i < 5; i++) {
+        let vaga = document.createElement('div');
+        vaga.classList.add('vaga', 'livre');
+        vaga.id = 'vaga-' + (i + 1);
+        vaga.textContent = i + 1; // Número da vaga
+        vaga.addEventListener('click', function() {
+            gerenciarVaga(this);
+        });
+        estacionamento.appendChild(vaga);
+    }
+    //lê a placa e retorna o estado
+    function gerenciarVaga(vaga) {
+        let vagaId = vaga.id;
+        let placa = prompt("Digite a placa do carro (ex: ABC1234):");
+        if (placa && placa.length <= 7) {
+            let estado = identificarEstado(placa);
+            alert(`Placa de origem: ${estado || "Não identificado"}`);
+        } else {
+            alert("Placa inválida.");
+            return; // Interrompe a execução se a placa for inválida
+        }
+        if (vaga.classList.contains('livre')) {
+            // Carro estacionando
+            horarioEntrada[vagaId] = new Date(); // Salva o horário de entrada
+            vaga.classList.replace('livre', 'ocupada');
+            alert(`Entrada registrada para a vaga ${vagaId} às ${horarioEntrada[vagaId].toLocaleTimeString()}`);
+        } else {
+            // Carro saindo
+            let horaSaida = prompt(`Insira a hora de saída para a ${vagaId} (formato HH:MM):`, new Date().toLocaleTimeString().slice(0, 5));
+            if (horaSaida) {
+                let dataSaida = new Date();
+                dataSaida.setHours(horaSaida.split(':')[0], horaSaida.split(':')[1]);
+                let tarifa = calcularTarifa(horarioEntrada[vagaId], dataSaida);
+                alert(`Tarifa para a vaga ${vagaId}: R$ ${tarifa}`);
+                vaga.classList.replace('ocupada', 'livre');
+            }
+        } 
+    }
+    function identificarEstado(placa) {
+        let letras = placa.substring(0, 3).toUpperCase();
+        if (letras >= "GKJ" && letras <= "HOK") return "Minas Gerais";
+        if (letras >= "JDP" && letras <= "JKR") return "Brasília";
+        if (letras >= "KAV" && letras <= "KFC") return "Goiás";
+        return null;
+    }
+
+
+    function calcularTarifa(horaEntrada, horaSaida) {
+    let diferenca = horaSaida - horaEntrada; // Diferença em milissegundos
+    let horasCompletas = Math.ceil(diferenca / 3600000); // Horas inteiras
+    let fracaoHora = diferenca % 3600000; // Milissegundos restantes após horas completas
+
+    let tarifa = tarifaPorHora * horasCompletas;
+    if (fracaoHora > 0) {
+        let fracoes = Math.ceil(fracaoHora / (15 * 60000)); // Calcula a quantidade de frações de 15 minutos
+        tarifa += tarifaPorFracao * fracoes;
+    }
+
+    return (tarifa-12).toFixed(2); // Retorna a tarifa com duas casas decimais
+}
+
+
+}); 
+        </script>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
